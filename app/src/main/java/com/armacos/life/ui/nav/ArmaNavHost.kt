@@ -2,6 +2,7 @@ package com.armacos.life.ui.nav
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Icon
@@ -30,12 +31,14 @@ import com.armacos.life.ui.manage.SettingsScreen
 import com.armacos.life.ui.manage.StatEditorScreen
 import com.armacos.life.ui.people.PeopleScreen
 import com.armacos.life.ui.today.TodayScreen
+import com.armacos.life.ui.trajet.TrajetScreen
 
 private data class BottomItem(val route: String, val label: String, val icon: ImageVector)
 
 private val bottomItems = listOf(
     BottomItem(Routes.TODAY, "Aujourd'hui", Icons.Filled.Today),
     BottomItem(Routes.HISTORY, "Historique", Icons.Filled.Insights),
+    BottomItem(Routes.TRAJET, "Trajet", Icons.Filled.Map),
     BottomItem(Routes.MANAGE, "Gérer", Icons.Filled.Tune),
 )
 
@@ -93,6 +96,9 @@ fun ArmaNavHost(deepLinkStatId: Long?, onDeepLinkConsumed: () -> Unit) {
                     onOpenRetro = { navController.navigate(Routes.retro(it)) },
                     onOpenDay = { navController.navigate(Routes.day(it)) },
                 )
+            }
+            composable(Routes.TRAJET) {
+                TrajetScreen()
             }
             composable(Routes.MANAGE) {
                 ManageScreen(

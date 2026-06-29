@@ -4,6 +4,7 @@ package com.armacos.life.ui.nav
 object Routes {
     const val TODAY = "today"
     const val HISTORY = "history"
+    const val TRAJET = "trajet"
     const val MANAGE = "manage"
     const val SETTINGS = "settings"
     const val PEOPLE = "people"

@@ -1,5 +1,6 @@
 package com.armacos.life.data.export
 
+import com.armacos.life.data.entity.LocationPoint
 import com.armacos.life.data.entity.Person
 import com.armacos.life.data.entity.Place
 import com.armacos.life.data.entity.StatDefinition
@@ -19,6 +20,7 @@ data class BackupData(
     val entries: List<StatEntry> = emptyList(),
     val people: List<Person> = emptyList(),
     val places: List<Place> = emptyList(),
+    val locations: List<LocationPoint> = emptyList(),
 )
 
 /** Export / import de toutes les données en JSON (sauvegarde locale, hors-ligne). */

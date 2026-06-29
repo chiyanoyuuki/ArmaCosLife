@@ -1,9 +1,11 @@
 package com.armacos.life.data.repo
 
+import com.armacos.life.data.db.LocationDao
 import com.armacos.life.data.db.PersonDao
 import com.armacos.life.data.db.PlaceDao
 import com.armacos.life.data.db.StatDefinitionDao
 import com.armacos.life.data.db.StatEntryDao
+import com.armacos.life.data.entity.LocationPoint
 import com.armacos.life.data.entity.Person
 import com.armacos.life.data.entity.Place
 import com.armacos.life.data.entity.StatDefinition
@@ -24,6 +26,7 @@ class TrackerRepository(
     private val entries: StatEntryDao,
     private val people: PersonDao,
     private val places: PlaceDao,
+    private val locations: LocationDao,
 ) {
 
     // ----- Stats -----
@@ -124,6 +127,30 @@ class TrackerRepository(
     suspend fun updatePlace(place: Place) = places.update(place)
     suspend fun deletePlace(place: Place) = places.delete(place)
 
+    // ----- Trajet GPS -----
+    fun locationsForDay(dayKey: String): Flow<List<LocationPoint>> = locations.observeForDay(dayKey)
+    suspend fun locationsForDayOnce(dayKey: String): List<LocationPoint> = locations.forDayOnce(dayKey)
+    fun daysWithTrack(): Flow<List<String>> = locations.observeDaysWithTrack()
+
+    suspend fun addLocation(
+        lat: Double,
+        lng: Double,
+        accuracy: Float,
+        timestamp: Long = System.currentTimeMillis(),
+    ) {
+        locations.insert(
+            LocationPoint(
+                timestamp = timestamp,
+                dayKey = DayKey.of(timestamp),
+                lat = lat,
+                lng = lng,
+                accuracy = accuracy,
+            ),
+        )
+    }
+
+    suspend fun clearDayTrack(dayKey: String) = locations.clearDay(dayKey)
+
     // ----- Widget -----
     suspend fun widgetSnapshot(): WidgetSnapshot {
         val today = DayKey.today()
@@ -158,6 +185,7 @@ class TrackerRepository(
         entries = entries.all(),
         people = people.all(),
         places = places.all(),
+        locations = locations.all(),
     )
 
     suspend fun replaceAll(data: BackupData) {
@@ -166,9 +194,11 @@ class TrackerRepository(
         defs.clear()
         people.clear()
         places.clear()
+        locations.clear()
         data.people.forEach { people.insert(it) }
         data.places.forEach { places.insert(it) }
         data.stats.forEach { defs.insert(it) }
         data.entries.forEach { entries.insert(it) }
+        data.locations.forEach { locations.insert(it) }
     }
 }

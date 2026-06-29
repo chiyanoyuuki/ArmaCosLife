@@ -8,6 +8,16 @@
         android:name="android.hardware.sensor.stepcounter"
         android:required="false" />
 
+    <!-- Trajet GPS : localisation (avant-plan + arrière-plan) et tuiles de carte -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+
     <application
         android:name=".ArmaApp"
         android:allowBackup="true"

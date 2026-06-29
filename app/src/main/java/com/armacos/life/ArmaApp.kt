@@ -3,8 +3,10 @@ package com.armacos.life
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
+import com.armacos.life.data.AppPrefs
 import com.armacos.life.data.DefaultStats
 import com.armacos.life.data.db.ArmaDatabase
+import com.armacos.life.data.db.MIGRATION_1_2
 import com.armacos.life.data.export.BackupManager
 import com.armacos.life.data.repo.TrackerRepository
 import com.armacos.life.widget.ArmaWidget
@@ -35,14 +37,17 @@ class AppContainer(private val appContext: Context) {
         appContext,
         ArmaDatabase::class.java,
         "arma.db",
-    ).fallbackToDestructiveMigration().build()
+    ).addMigrations(MIGRATION_1_2).build()
 
     val repository = TrackerRepository(
         database.statDefinitionDao(),
         database.statEntryDao(),
         database.personDao(),
         database.placeDao(),
+        database.locationDao(),
     )
+
+    val prefs = AppPrefs(appContext)
 
     val backupManager = BackupManager(repository)
 

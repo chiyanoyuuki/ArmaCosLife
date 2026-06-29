@@ -136,7 +136,6 @@ fun SettingsScreen(onBack: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
             InfoCard("Bientôt (V2)") {
-                Bullet("Trajet GPS de la journée (carte des lieux).")
                 Bullet("Temps passé par application.")
                 Bullet("Activité de messagerie via les notifications reçues.")
                 Spacer(Modifier.height(8.dp))
