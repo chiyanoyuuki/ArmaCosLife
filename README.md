@@ -29,7 +29,7 @@ Kotlin · Jetpack Compose (Material 3) · **Glance** (widget) · Room (base loca
 
 ## 🚀 Compiler & installer (Android Studio)
 
-1. **Ouvre le projet** dans Android Studio (Hedgehog ou plus récent). Laisse-le synchroniser Gradle (le wrapper télécharge Gradle 8.7 tout seul).
+1. **Ouvre le projet** dans Android Studio (Hedgehog ou plus récent) et laisse-le synchroniser. Le projet est réglé sur **Gradle 8.7** ; si Android Studio signale un wrapper Gradle manquant, accepte qu'il le régénère (ou lance `gradle wrapper` une fois).
 2. Branche ton **Galaxy S23 Ultra** en USB avec le **débogage USB** activé (Réglages → Options pour développeurs).
 3. Choisis ton téléphone dans la barre du haut, puis **Run ▶** (`Shift+F10`).
 4. L'appli s'installe et se lance. Au premier lancement, ~10 stats de démo sont créées (modifiables/supprimables).
