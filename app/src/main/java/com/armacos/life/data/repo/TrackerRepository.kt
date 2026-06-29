@@ -90,6 +90,12 @@ class TrackerRepository(
 
     suspend fun deleteEntry(entry: StatEntry) = entries.delete(entry)
 
+    /** Duplique une saisie à l'heure actuelle (mêmes valeurs, nouveau timestamp). */
+    suspend fun duplicateEntry(entry: StatEntry) {
+        val now = System.currentTimeMillis()
+        entries.insert(entry.copy(id = 0, timestamp = now, dayKey = DayKey.of(now)))
+    }
+
     /** Stat alimentée par le capteur de pas (s'il y en a une). */
     suspend fun stepStat(): StatDefinition? = defs.firstBySource(StatSource.STEP_SENSOR)
 

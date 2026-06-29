@@ -1,5 +1,6 @@
 package com.armacos.life.ui.entry
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -18,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Star
@@ -47,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -72,6 +75,7 @@ fun EntryScreen(statId: Long, onClose: () -> Unit) {
     val container = LocalAppContainer.current
     val repo = container.repository
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     val today = remember { DayKey.today() }
 
     val statFlow = remember { repo.statFlow(statId) }
@@ -81,13 +85,14 @@ fun EntryScreen(statId: Long, onClose: () -> Unit) {
 
     var note by remember { mutableStateOf("") }
 
+    // On NE ferme PAS l'écran après une saisie : on reste, la valeur du jour se met
+    // à jour en direct, et l'utilisateur revient en arrière lui-même quand il veut.
     fun submit(
         num: Double? = null,
         text: String? = null,
         choice: String? = null,
         people: List<Long> = emptyList(),
         place: Long? = null,
-        close: Boolean = true,
     ) {
         scope.launch {
             repo.log(
@@ -100,7 +105,8 @@ fun EntryScreen(statId: Long, onClose: () -> Unit) {
                 note = note.ifBlank { null },
             )
             container.refreshWidget()
-            if (close) onClose()
+            note = ""
+            Toast.makeText(context, "Enregistré ✓", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -174,12 +180,22 @@ fun EntryScreen(statId: Long, onClose: () -> Unit) {
                 )
                 Spacer(Modifier.height(8.dp))
                 dayEntries.forEach { e ->
-                    EntryRow(current, e) {
-                        scope.launch {
-                            repo.deleteEntry(e)
-                            container.refreshWidget()
-                        }
-                    }
+                    EntryRow(
+                        stat = current,
+                        entry = e,
+                        onDuplicate = {
+                            scope.launch {
+                                repo.duplicateEntry(e)
+                                container.refreshWidget()
+                            }
+                        },
+                        onDelete = {
+                            scope.launch {
+                                repo.deleteEntry(e)
+                                container.refreshWidget()
+                            }
+                        },
+                    )
                 }
             }
         }
@@ -265,7 +281,10 @@ private fun AmountInput(stat: StatDefinition, onSubmit: (Double) -> Unit) {
             Spacer(Modifier.width(12.dp))
             Button(
                 onClick = {
-                    text.replace(',', '.').toDoubleOrNull()?.let(onSubmit)
+                    text.replace(',', '.').toDoubleOrNull()?.let {
+                        onSubmit(it)
+                        text = ""
+                    }
                 },
                 modifier = Modifier.height(56.dp),
             ) { Text("Ajouter") }
@@ -290,7 +309,15 @@ private fun RatingInput(onSubmit: (Int) -> Unit) {
             }
         }
         Spacer(Modifier.height(12.dp))
-        Button(onClick = { if (rating > 0) onSubmit(rating) }, enabled = rating > 0) {
+        Button(
+            onClick = {
+                if (rating > 0) {
+                    onSubmit(rating)
+                    rating = 0
+                }
+            },
+            enabled = rating > 0,
+        ) {
             Text("Enregistrer la note")
         }
     }
@@ -346,7 +373,15 @@ private fun TextInput(onSubmit: (String) -> Unit) {
             modifier = Modifier.fillMaxWidth().height(120.dp),
         )
         Spacer(Modifier.height(12.dp))
-        Button(onClick = { if (text.isNotBlank()) onSubmit(text) }, enabled = text.isNotBlank()) {
+        Button(
+            onClick = {
+                if (text.isNotBlank()) {
+                    onSubmit(text)
+                    text = ""
+                }
+            },
+            enabled = text.isNotBlank(),
+        ) {
             Text("Enregistrer")
         }
     }
@@ -435,7 +470,12 @@ private fun PresetChips(presets: List<Double>, unit: String, onPick: (Double) ->
 }
 
 @Composable
-private fun EntryRow(stat: StatDefinition, entry: StatEntry, onDelete: () -> Unit) {
+private fun EntryRow(
+    stat: StatDefinition,
+    entry: StatEntry,
+    onDuplicate: () -> Unit,
+    onDelete: () -> Unit,
+) {
     val time = remember(entry.timestamp) {
         Instant.ofEpochMilli(entry.timestamp).atZone(ZoneId.systemDefault())
             .format(DateTimeFormatter.ofPattern("HH:mm"))
@@ -459,6 +499,9 @@ private fun EntryRow(stat: StatDefinition, entry: StatEntry, onDelete: () -> Uni
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            IconButton(onClick = onDuplicate) {
+                Icon(Icons.Filled.ContentCopy, contentDescription = "Dupliquer")
             }
             IconButton(onClick = onDelete) {
                 Icon(Icons.Filled.Delete, contentDescription = "Supprimer")
