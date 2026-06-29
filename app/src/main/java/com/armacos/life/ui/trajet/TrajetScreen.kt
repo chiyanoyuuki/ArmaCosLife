@@ -1,6 +1,7 @@
 package com.armacos.life.ui.trajet
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -191,18 +192,27 @@ fun TrajetScreen() {
 
 @Composable
 private fun TrackMap(points: List<GeoPoint>, lineColor: Int) {
-    val context = LocalContext.current
+    // Mémorise le nombre de points déjà cadrés pour ne recentrer que quand ça change.
+    val fittedFor = remember { mutableStateOf(-1) }
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { ctx ->
+            // Init osmdroid AVANT de créer la carte : load() + dossiers de cache
+            // accessibles en écriture, sinon les tuiles s'affichent puis disparaissent.
             Configuration.getInstance().apply {
-                userAgentValue = ctx.packageName
-                osmdroidBasePath = ctx.cacheDir
-                osmdroidTileCache = File(ctx.cacheDir, "osmdroid")
+                load(ctx.applicationContext, ctx.getSharedPreferences("osmdroid", Context.MODE_PRIVATE))
+                userAgentValue = "ArmaCosLife"
+                osmdroidBasePath = File(ctx.cacheDir, "osmdroid").also { it.mkdirs() }
+                osmdroidTileCache = File(osmdroidBasePath, "tiles").also { it.mkdirs() }
             }
             MapView(ctx).apply {
                 setTileSource(TileSourceFactory.MAPNIK)
                 setMultiTouchControls(true)
+                setUseDataConnection(true)
+                // OSM n'a pas de tuiles au-delà de ~19 : on plafonne pour ne jamais
+                // retomber sur le quadrillage gris, même en pinçant pour zoomer.
+                maxZoomLevel = 19.0
+                minZoomLevel = 3.0
                 controller.setZoom(5.0)
                 controller.setCenter(GeoPoint(46.6, 2.4))
                 onResume()
@@ -219,16 +229,29 @@ private fun TrackMap(points: List<GeoPoint>, lineColor: Int) {
                 map.overlays.add(line)
                 addMarker(map, points.first(), "Départ")
                 if (points.size > 1) addMarker(map, points.last(), "Arrivée")
-                map.post {
-                    runCatching {
-                        map.zoomToBoundingBox(BoundingBox.fromGeoPoints(points), true, 96)
-                    }
+                if (fittedFor.value != points.size) {
+                    fittedFor.value = points.size
+                    map.post { fitCamera(map, points) }
                 }
+            } else {
+                fittedFor.value = -1
             }
             map.invalidate()
         },
         onRelease = { it.onDetach() },
     )
+}
+
+/** Cadre la caméra sur le trajet, sans sur-zoomer (cas d'un seul point inclus). */
+private fun fitCamera(map: MapView, points: List<GeoPoint>) {
+    if (points.isEmpty()) return
+    if (points.size == 1) {
+        map.controller.setZoom(16.0)
+        map.controller.setCenter(points.first())
+        return
+    }
+    runCatching { map.zoomToBoundingBox(BoundingBox.fromGeoPoints(points), false, 120) }
+    if (map.zoomLevelDouble > 17.0) map.controller.setZoom(17.0)
 }
 
 private fun addMarker(map: MapView, point: GeoPoint, label: String) {
