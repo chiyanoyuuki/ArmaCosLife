@@ -9,6 +9,7 @@ import com.armacos.life.data.export.BackupManager
 import com.armacos.life.data.repo.TrackerRepository
 import com.armacos.life.widget.ArmaWidget
 import com.armacos.life.work.WorkScheduler
+import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

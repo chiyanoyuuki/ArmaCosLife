@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.glance.GlanceId
 import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.action.ActionCallback
+import androidx.glance.appwidget.updateAll
 import com.armacos.life.ArmaApp
 
 /** Clé d'extra : l'id de la stat ciblée par un tap sur une tuile. */
