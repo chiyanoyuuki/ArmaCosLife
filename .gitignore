@@ -1,0 +1,25 @@
+# Gradle / build
+.gradle/
+build/
+app/build/
+/captures
+.externalNativeBuild
+.cxx
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+*.hprof
+
+# Local config & secrets
+local.properties
+*.keystore
+*.jks
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Outputs
+*.apk
+*.aab

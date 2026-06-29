@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ArmaCos Life</string>
+    <string name="widget_label">ArmaCos Life — Saisie rapide</string>
+    <string name="widget_description">Note tes stats du jour en un geste.</string>
+</resources>
